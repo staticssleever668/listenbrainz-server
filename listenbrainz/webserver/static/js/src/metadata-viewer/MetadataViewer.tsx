@@ -155,14 +155,10 @@ export default function MetadataViewer(props: MetadataViewerProps) {
   const { metadata } = recordingData ?? {};
 
   const artistMBID = first(recordingData?.artist_mbids);
-  let coverArtSrc = "/static/img/cover-art-placeholder.jpg";
-  if (metadata?.release?.mbid) {
-    if (metadata.release.caa_id) {
+  let defaultCoverArtSrc = "/static/img/cover-art-placeholder.jpg";
+  let coverArtSrc = defaultCoverArtSrc;
+  if (metadata?.release?.mbid && metadata.release.caa_id) {
       coverArtSrc = `https://coverartarchive.org/release/${metadata.release.mbid}/${metadata.release.caa_id}-500.jpg`;
-    } else {
-      // Backup if we don't have the CAA ID
-      coverArtSrc = `https://coverartarchive.org/release/${metadata.release.mbid}/front`;
-    }
   }
 
   const flattenedRecRels: MusicBrainzRecordingRel[] =
@@ -310,6 +306,7 @@ export default function MetadataViewer(props: MetadataViewerProps) {
             ref={albumArtRef}
             crossOrigin="anonymous"
             alt="Album art"
+            onError={function(event){if (event.currentTarget.src !== defaultCoverArtSrc) event.currentTarget.src = defaultCoverArtSrc;}}
           />
         </div>
         <div className="bottom">
