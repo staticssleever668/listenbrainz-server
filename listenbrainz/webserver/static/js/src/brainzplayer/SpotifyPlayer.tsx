@@ -1,20 +1,19 @@
 /* eslint-disable no-underscore-dangle */
 import * as React from "react";
 import {
-  isEqual as _isEqual,
-  get as _get,
-  has as _has,
   debounce as _debounce,
-  isString,
   difference,
+  get as _get,
+  isEqual as _isEqual,
+  isString,
 } from "lodash";
 import {
-  searchForSpotifyTrack,
-  loadScriptAsync,
-  getTrackName,
   getArtistName,
+  getTrackName,
+  loadScriptAsync,
+  searchForSpotifyTrack,
 } from "../utils/utils";
-import { DataSourceType, DataSourceProps } from "./BrainzPlayer";
+import { DataSourceProps, DataSourceType } from "./BrainzPlayer";
 
 // Fix for LB-447 (Player does not play any sound)
 // https://github.com/spotify/web-playback-sdk/issues/75#issuecomment-487325589
@@ -107,7 +106,7 @@ export default class SpotifyPlayer
 
   componentDidUpdate(prevProps: DataSourceProps) {
     const { show } = this.props;
-    if (prevProps.show === true && show === false) {
+    if (prevProps.show && !show) {
       this.stopAndClear();
     }
   }
@@ -127,10 +126,7 @@ export default class SpotifyPlayer
     if (!spotifyId) {
       return "";
     }
-    const spotifyTrack = spotifyId.split(
-      "https://open.spotify.com/track/"
-    )?.[1];
-    return spotifyTrack;
+    return spotifyId.split("https://open.spotify.com/track/")?.[1];
   }
 
   static getSpotifyUriFromListen(listen: Listen | JSPFTrack): string {
@@ -150,12 +146,7 @@ export default class SpotifyPlayer
     const releaseName = trackName
       ? ""
       : _get(listen, "track_metadata.release_name");
-    const {
-      handleError,
-      handleWarning,
-      handleSuccess,
-      onTrackNotFound,
-    } = this.props;
+    const { handleError, handleWarning, onTrackNotFound } = this.props;
     if (!trackName && !artistName && !releaseName) {
       handleWarning("Not enough info to search on Spotify");
       onTrackNotFound();
@@ -169,14 +160,14 @@ export default class SpotifyPlayer
         releaseName
       );
       if (track?.uri) {
-        this.playSpotifyURI(track.uri);
+        await this.playSpotifyURI(track.uri);
         return;
       }
       onTrackNotFound();
     } catch (errorObject) {
       if (errorObject.status === 401) {
         // Handle token error and try again if fixed
-        this.handleTokenError(
+        await this.handleTokenError(
           errorObject.message,
           this.searchAndPlayTrack.bind(this, listen)
         );
@@ -230,7 +221,7 @@ export default class SpotifyPlayer
       }
       if (response.status === 401) {
         // Handle token error and try again if fixed
-        this.handleTokenError(
+        await this.handleTokenError(
           response.statusText,
           this.playSpotifyURI.bind(this, spotifyURI, retryCount + 1)
         );
@@ -287,17 +278,17 @@ export default class SpotifyPlayer
     );
   };
 
-  playListen = (listen: Listen | JSPFTrack): void => {
+  playListen = async (listen: Listen | JSPFTrack): Promise<void> => {
     const { show } = this.props;
     if (!show) {
       return;
     }
     if (SpotifyPlayer.getSpotifyURLFromListen(listen)) {
-      this.playSpotifyURI(
+      await this.playSpotifyURI(
         SpotifyPlayer.getSpotifyUriFromListen(listen as Listen)
       );
     } else {
-      this.searchAndPlayTrack(listen);
+      await this.searchAndPlayTrack(listen);
     }
   };
 
@@ -476,7 +467,7 @@ export default class SpotifyPlayer
 
     // How do we accurately detect the end of a song?
     // From https://github.com/spotify/web-playback-sdk/issues/35#issuecomment-469834686
-    if (position === 0 && paused === true) {
+    if (position === 0 && paused) {
       // Track finished, play next track
       this.debouncedOnTrackEnd();
       return;
