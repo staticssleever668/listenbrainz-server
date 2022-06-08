@@ -453,6 +453,9 @@ export default class SpotifyPlayer
       track_window: { current_track },
     } = playerState;
 
+    // eslint-disable-next-line no-console
+    console.log("Player State: ", playerState);
+
     const { currentSpotifyTrack, durationMs } = this.state;
     const { playerPaused } = this.props;
     const {
