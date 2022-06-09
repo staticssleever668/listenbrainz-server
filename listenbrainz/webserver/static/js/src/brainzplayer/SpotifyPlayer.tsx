@@ -454,7 +454,7 @@ export default class SpotifyPlayer
     } = playerState;
 
     // eslint-disable-next-line no-console
-    console.log("Player State: ", playerState);
+    console.log(playerState);
 
     const { currentSpotifyTrack, durationMs } = this.state;
     const { playerPaused } = this.props;
@@ -472,6 +472,8 @@ export default class SpotifyPlayer
     // From https://github.com/spotify/web-playback-sdk/issues/35#issuecomment-469834686
     if (position === 0 && paused) {
       // Track finished, play next track
+      // eslint-disable-next-line no-console
+      console.log("Play next track");
       this.debouncedOnTrackEnd();
       return;
     }
