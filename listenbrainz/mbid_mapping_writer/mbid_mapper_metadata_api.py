@@ -92,7 +92,7 @@ class MBIDMapperMetadataAPI:
         strings = ["(", "[", " ft ", " ft. ", " feat ", " feat. ", " featuring ", " - "]
         if is_artist_credit:
             strings.insert(0, ",")
-            strings.append(" with ")
+            strings.extend([" with ", " + ", " × ", " & "])
 
         for s in strings:
             index = query.find(s)
