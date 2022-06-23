@@ -52,3 +52,4 @@ kombu==5.1.0
 itsdangerous==2.1.2
 pylistenbrainz==0.5.1
 countryinfo==0.1.2
+CouchDB == 1.2
