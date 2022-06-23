@@ -9,7 +9,7 @@ from listenbrainz import db
 def insert_release_radar_data(data):
     """ Insert the given release radar data into the database """
     query = """
-        INSERT INTO recommendation.release_radar (user_id, data, last_updated)
+        INSERT INTO recommendation.recent_releases (user_id, data, last_updated)
              SELECT "user".id
                   , data::jsonb
                   , NOW()
@@ -37,7 +37,7 @@ def get_release_radar_data(user_id):
     with db.engine.connect() as connection:
         result = connection.execute(sqlalchemy.text("""
             SELECT user_id, last_updated, data
-              FROM recommendation.release_radar
+              FROM recommendation.recent_releases
              WHERE user_id = :user_id
              """), user_id=user_id)
         row = result.fetchone()
