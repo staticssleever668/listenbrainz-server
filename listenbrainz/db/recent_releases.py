@@ -20,7 +20,7 @@ def get_recent_release_database_name():
     return sorted(recent_release_dbs)[-1]
 
 
-def get_recent_release(user_id):
+def get_recent_releases(user_id):
     database = get_recent_release_database_name()
     document_url = f"http://{current_app.config['COUCHDB_HOST']}:{current_app.config['COUCHDB_PORT']}/{database}/{user_id}"
 

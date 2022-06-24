@@ -7,7 +7,7 @@ from pyspark import Row
 
 import listenbrainz_spark
 from listenbrainz_spark.constants import LAST_FM_FOUNDING_YEAR
-from listenbrainz_spark.schema import release_radar_schema
+from listenbrainz_spark.schema import recent_releases_schema
 from listenbrainz_spark.stats import run_query
 from listenbrainz_spark.utils import get_latest_listen_ts, get_listens_from_new_dump
 
@@ -32,7 +32,7 @@ def load_all_releases():
 
         return listenbrainz_spark.session.createDataFrame(
             releases,
-            schema=release_radar_schema
+            schema=recent_releases_schema
         )
 
 
@@ -40,11 +40,11 @@ def get_query():
     return """
         WITH artists AS (
             SELECT DISTINCT explode(artist_mbids) AS artist_mbid
-              FROM release_radar_releases
+              FROM recent_releases
         ), exploded_listens AS (
             SELECT user_id
                  , explode(artist_credit_mbids) AS artist_mbid
-              FROM release_radar_listens
+              FROM recent_listens
         ), artist_discovery AS (
             SELECT user_id
                  , artist_mbid
@@ -64,7 +64,7 @@ def get_query():
                  , rr.release_group_secondary_type
                  , SUM(partial_confidence) AS confidence
               FROM artist_discovery ad
-              JOIN release_radar_releases rr
+              JOIN recent_releases rr
                 ON array_contains(rr.artist_mbids, ad.artist_mbid)
           GROUP BY ad.user_id
                  , rr.release_name
@@ -108,9 +108,9 @@ def main(days: int, database: str):
     else:
         from_date = datetime(LAST_FM_FOUNDING_YEAR, 1, 1)
     get_listens_from_new_dump(from_date, to_date) \
-        .createOrReplaceTempView("release_radar_listens")
+        .createOrReplaceTempView("recent_listens")
 
-    load_all_releases().createOrReplaceTempView("release_radar_releases")
+    load_all_releases().createOrReplaceTempView("recent_releases")
 
     itr = run_query(get_query()).toLocalIterator()
     for rows in chunked(itr, USERS_PER_MESSAGE):
