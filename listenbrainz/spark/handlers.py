@@ -54,14 +54,16 @@ def notify_user_stats_update(stat_type):
 
 def handle_user_entity(data):
     """ Take entity stats for a user and save it in the database. """
-    values = [(entry["user_id"], entry["count"], json.dumps(entry["data"])) for entry in data["data"]]
-    db_stats.insert_multiple_user_jsonb_data(
-        data["entity"],
-        data["stats_range"],
-        data["from_ts"],
-        data["to_ts"],
-        values
-    )
+    try:
+        db_stats.insert_stats_in_couchdb(
+            data["entity"],
+            data["stats_range"],
+            data["from_ts"],
+            data["to_ts"],
+            data["data"]
+        )
+    except HTTPError as e:
+        current_app.logger.error(f"{e}. Response: %s", e.response.json(), exc_info=True)
 
 
 def _handle_user_activity_stats(stats_type, data):
@@ -242,7 +244,7 @@ def handle_recent_releases(message):
     try:
         insert_recent_releases(message["database"], message["data"])
     except HTTPError as e:
-        current_app.logger.error(f"{str(e)}. Response: %s", e.response.json(), exc_info=True)
+        current_app.logger.error(f"{e}. Response: %s", e.response.json(), exc_info=True)
 
 
 def notify_mapping_import(data):
