@@ -123,6 +123,7 @@ COUCHDB_PORT = {{.Port}}
 COUCHDB_HOST = "localhost"
 COUCHDB_PORT = 5984
 {{end}}
+COUCHDB_USER = "listenbrainz"
 COUCHDB_ADMIN_KEY = '''{{template "KEY" "couchdb_admin_key"}}'''
 
 {{if service "listenbrainz-redis"}}

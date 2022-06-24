@@ -72,6 +72,7 @@ TYPESENSE_API_KEY = "API_KEY"
 # Couchdb instance config
 COUCHDB_HOST = "localhost"
 COUCHDB_PORT = 5984
+COUCHDB_USER = "listenbrainz"
 COUCHDB_ADMIN_KEY = ""
 
 # MusicBrainz OAuth

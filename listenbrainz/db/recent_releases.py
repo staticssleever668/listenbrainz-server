@@ -2,8 +2,15 @@ import requests
 from flask import current_app
 
 
+def get_couchdb_base_url():
+    return f"http://{current_app.config['COUCHDB_USER']}" \
+           f":{current_app.config['COUCHDB_ADMIN_KEY']}" \
+           f"@{current_app.config['COUCHDB_HOST']}" \
+           f":{current_app.config['COUCHDB_PORT']}"
+
+
 def check_create_recent_release_database(db_name):
-    databases_url = f"http://{current_app.config['COUCHDB_HOST']}:{current_app.config['COUCHDB_PORT']}/{db_name}"
+    databases_url = f"{get_couchdb_base_url()}/{db_name}"
     response = requests.head(databases_url)
     if response.status_code == 200:
         return
@@ -13,7 +20,7 @@ def check_create_recent_release_database(db_name):
 
 
 def get_recent_release_database_name():
-    databases_url = f"http://{current_app.config['COUCHDB_HOST']}:{current_app.config['COUCHDB_PORT']}/_all_dbs"
+    databases_url = f"{get_couchdb_base_url()}/_all_dbs"
     response = requests.get(databases_url)
     response.raise_for_status()
     databases = response.json()
@@ -24,7 +31,7 @@ def get_recent_release_database_name():
 
 def insert_recent_releases(db_name, docs):
     check_create_recent_release_database(db_name)
-    couchdb_url = f"http://{current_app.config['COUCHDB_HOST']}:{current_app.config['COUCHDB_PORT']}/{db_name}/_bulk_docs"
+    couchdb_url = f"{get_couchdb_base_url()}/{db_name}/_bulk_docs"
     for doc in docs:
         doc["_id"] = str(doc["user_id"])
     response = requests.post(couchdb_url, json=docs)
@@ -33,7 +40,7 @@ def insert_recent_releases(db_name, docs):
 
 def get_recent_releases(user_id):
     database = get_recent_release_database_name()
-    document_url = f"http://{current_app.config['COUCHDB_HOST']}:{current_app.config['COUCHDB_PORT']}/{database}/{user_id}"
+    document_url = f"{get_couchdb_base_url()}/{database}/{user_id}"
 
     response = requests.get(document_url)
     response.raise_for_status()
