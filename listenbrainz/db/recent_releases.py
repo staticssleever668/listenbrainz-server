@@ -34,7 +34,7 @@ def insert_recent_releases(db_name, docs):
     couchdb_url = f"{get_couchdb_base_url()}/{db_name}/_bulk_docs"
     for doc in docs:
         doc["_id"] = str(doc["user_id"])
-    response = requests.post(couchdb_url, json=docs)
+    response = requests.post(couchdb_url, json={"docs": docs})
     response.raise_for_status()
 
 
