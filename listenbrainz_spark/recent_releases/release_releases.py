@@ -114,12 +114,8 @@ def main(days: int, database: str):
 
     itr = run_query(get_query()).toLocalIterator()
     for rows in chunked(itr, USERS_PER_MESSAGE):
-        entries = []
-        for row in rows:
-            entry = row.asDict(recursive=True)
-            entry["database"] = database
-            entries.append(entry)
         yield {
             "type": "recent_releases",
-            "data": entries
+            "database": database,
+            "data": [row.asDict(recursive=True) for row in rows]
         }
