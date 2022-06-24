@@ -7,6 +7,7 @@ from datetime import datetime, timezone, timedelta
 from brainzutils.mail import send_mail
 from flask import current_app, render_template
 from pydantic import ValidationError
+from requests import HTTPError
 
 import listenbrainz.db.missing_musicbrainz_data as db_missing_musicbrainz_data
 import listenbrainz.db.recommendations_cf_recording as db_recommendations_cf_recording
@@ -238,7 +239,10 @@ def handle_recommendations(data):
 
 
 def handle_recent_releases(message):
-    insert_recent_releases(message["database"], message["data"])
+    try:
+        insert_recent_releases(message["database"], message["data"])
+    except HTTPError as e:
+        current_app.logger.error(f"{str(e)}. Response: %s", e.response.json(), exc_info=True)
 
 
 def notify_mapping_import(data):
